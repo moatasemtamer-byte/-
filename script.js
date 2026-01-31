@@ -284,6 +284,15 @@ function generateOrder() {
         return;
     }
 
+    // Add payment method
+    const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+    orderText += "\n";
+    if (paymentMethod === 'instapay') {
+        orderText += "دفع انستا باي";
+    } else {
+        orderText += "الدفع كاش";
+    }
+
     // Display order in modal
     const orderTextElement = document.getElementById('orderText');
     if (orderTextElement) {
@@ -400,6 +409,61 @@ function updateBodyScroll() {
     } else {
         document.body.style.overflow = '';
     }
+}
+
+/**
+ * Update order preview when payment method changes
+ */
+function updatePaymentPreview() {
+    // Regenerate the order text with new payment method
+    let orderText = "سلام عليكم لو سمحت ممكن :\n\n";
+
+    const allItems = [];
+    Object.keys(menuData).forEach(category => {
+        menuData[category].forEach(item => {
+            if (orderState[item.id] && orderState[item.id].quantity > 0) {
+                allItems.push({
+                    ...item,
+                    category,
+                    state: orderState[item.id]
+                });
+            }
+        });
+    });
+
+    allItems.sort((a, b) => a.id - b.id);
+
+    allItems.forEach(item => {
+        let prefix = "";
+        
+        if (item.category === 'balady' || item.category === 'shami') {
+            prefix = "سندوتش";
+        } else if (item.category === 'jar' || item.category === 'appetizer') {
+            if (!item.name.includes("علبة") && !item.name.includes("باكت") && 
+                !item.name.includes("قرص") && !item.name.includes("رغيف")) {
+                prefix = "علبة";
+            }
+        }
+
+        let line = `${item.state.quantity} ${prefix} ${item.name}`.replace(/\s+/g, ' ').trim();
+        
+        if (item.state.hasExtras) {
+            line += " عليه بتنجان مخلل";
+        }
+        
+        orderText += line + "\n";
+    });
+
+    // Add payment method
+    const paymentMethod = document.querySelector('input[name="payment"]:checked').value;
+    orderText += "\n";
+    if (paymentMethod === 'instapay') {
+        orderText += "دفع انستا باي";
+    } else {
+        orderText += "الدفع كاش";
+    }
+
+    document.getElementById('orderText').textContent = orderText;
 }
 
 // Initialize app when DOM is ready
